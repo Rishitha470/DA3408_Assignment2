@@ -214,13 +214,4 @@ Clean up: `kubectl delete -f k8s/q4-deployment.yaml -f k8s/q4-service.yaml`
 
 ---
 
-## Submission checklist
-
-- [ ] `evidence/q1_sizes.txt` — both sizes + % reduction
-- [ ] `evidence/q2_bench.txt` — miss vs hit latencies, speedup factor
-- [ ] `evidence/q3_pods_wide.txt` — 4 pods Running concurrently, `-o wide`
-- [ ] `evidence/q3_results.txt` — per-shard invalid counts vs ground truth
-- [ ] `evidence/q4_selfheal.txt` — pod deleted and recreated
-- [ ] `evidence/q4_rollout.txt` + `evidence/q4_downtime_probe.txt`
-- [ ] `WRITEUP.md` 
 
