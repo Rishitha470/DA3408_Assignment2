@@ -33,7 +33,8 @@ orchestrated with Docker Compose, and run on Kubernetes.
 └── WRITEUP.md
 |__ Image evidences              # contains image evidences
 |__ MANUAL_COMMANDS.md           # The commands I ran
-|__ AIOps_Report2                # The pdf report                    
+|__ AIOps_Report2.pdf            # The pdf report
+|__ AI_DISCLOSURE.md             # AI Disclosure                   
 
 ```
 
