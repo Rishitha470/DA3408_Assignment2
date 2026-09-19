@@ -1,6 +1,6 @@
 # DA3408 Assignment2
 
-**Name:** K.Rishitha · **Roll no:** DA24B040 · 
+**Name:** K.Rishitha   ,  **Roll no:** DA24B040 
 
 ---
 
@@ -14,7 +14,7 @@
 
 Both images serve `GET /healthz` and `POST /predict` the same way, I tested this by curling both containers with the same spam/ham messages and got identical labels. That check is saved in `evidence/q1_sizes.txt`.
 
-**Why the multi-stage image is smaller.** I used `python:3.11-slim` as the base for both Dockerfiles, so the size gap isn't coming from the base image at all — it's entirely from what each Dockerfile installs and leaves behind.
+**Why the multi-stage image is smaller.** I used `python:3.11-slim` as the base for both Dockerfiles, so the size gap isn't coming from the base image at all, it's entirely from what each Dockerfile installs and leaves behind.
 
 I confirmed this by shelling into both images and checking directly (also in `evidence/q1_sizes.txt`):
 
@@ -57,7 +57,7 @@ For the caching logic itself, `main.py` hashes the incoming text and checks Redi
 
 All 200 labels matched exactly between the two runs, so the cache is only changing how fast the answer comes back, not what the answer actually is. Redis's own `/cache/stats` endpoint backed this up too,  `{"cache":"enabled","keyspace_hits":201,"keyspace_misses":206,"keys":206}`, full output is in `evidence/q2_bench.txt`.
 
-**Compose vs Kubernetes.** A single Dockerfile can only describe one image and one container in isolation, it has no way to say "this container needs to talk to that other container by name" or "start this one only after that one is healthy." That's the gap Compose fills: it wires multiple containers together on one machine. But that's also its ceiling — Compose only ever knows about one Docker host, it has no concept of multiple machines at all. Kubernetes is built for the opposite problem: it schedules pods across a whole cluster of nodes, and it comes with control loops Compose just doesn't have — restarting things on a different node if one dies, rolling out a new version without downtime, and giving you a stable Service address in front of pods that come and go. Basically, Compose answers "how do these containers talk to each other on my one machine," and Kubernetes answers "how does this whole app keep running correctly across many machines."
+**Compose vs Kubernetes.** A single Dockerfile can only describe one image and one container in isolation, it has no way to say "this container needs to talk to that other container by name" or "start this one only after that one is healthy." That's the gap Compose fills: it wires multiple containers together on one machine. But that's also its ceiling, Compose only ever knows about one Docker host, it has no concept of multiple machines at all. Kubernetes is built for the opposite problem: it schedules pods across a whole cluster of nodes, and it comes with control loops Compose just doesn't have, restarting things on a different node if one dies, rolling out a new version without downtime, and giving you a stable Service address in front of pods that come and go. Basically, Compose answers "how do these containers talk to each other on my one machine," and Kubernetes answers "how does this whole app keep running correctly across many machines."
 
 ---
 ## Q3: Kubernetes Indexed Job, parallel shard validation
