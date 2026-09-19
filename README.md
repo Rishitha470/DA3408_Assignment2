@@ -30,7 +30,11 @@ orchestrated with Docker Compose, and run on Kubernetes.
 │   ├── q4_selfheal.sh           # Q4 delete-a-pod evidence
 │   └── q4_rollout.sh            # Q4 rolling update + zero-downtime probe
 ├── evidence/                    # all captured command output lands here
-└── WRITEUP.md                   # the 2-page PDF write-up (convert to PDF)
+└── WRITEUP.md
+|__ Image evidences              # contains image evidences
+|__ MANUAL_COMMANDS.md           # The commands I ran
+|__ AIOps_Report2                # The pdf report                    
+
 ```
 
 Prerequisites: Docker Engine + `docker compose` v2, `minikube`, `kubectl`,
