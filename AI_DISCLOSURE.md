@@ -10,5 +10,6 @@ I used an AI assistant during the assignment mainly for learning, clarification,
 - get advice on some parts of the implementation when I was unsure; and
 - add comments to the code so that I could understand it more easily when revisiting the files;
 - get the idea of creating scripts to automatically generate and collect evidence files for the assignment.
+- writing ``.yml`` file.
 
 I tested and verified the commands and code myself before including them in the final submission.
