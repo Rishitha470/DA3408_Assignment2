@@ -1,0 +1,173 @@
+=== building naive single-stage image ===
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.naive
+#1 transferring dockerfile: 1.37kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 ...
+
+#3 [auth] library/python:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 DONE 1.8s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 131B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [1/7] FROM docker.io/library/python:3.11-slim@sha256:9534e5a8e315485d4061ed659af0fd78a284c015f9b73661b41d6bab25604534
+#6 resolve docker.io/library/python:3.11-slim@sha256:9534e5a8e315485d4061ed659af0fd78a284c015f9b73661b41d6bab25604534 0.1s done
+#6 DONE 0.1s
+
+#5 [internal] load build context
+#5 transferring context: 174B done
+#5 DONE 0.0s
+
+#7 [4/7] COPY requirements-train.txt requirements.txt ./
+#7 CACHED
+
+#8 [5/7] RUN pip install -r requirements-train.txt -r requirements.txt
+#8 CACHED
+
+#9 [6/7] COPY generate_dataset.py train.py main.py ./
+#9 CACHED
+
+#10 [2/7] WORKDIR /app
+#10 CACHED
+
+#11 [3/7] RUN apt-get update && apt-get install -y --no-install-recommends         build-essential gcc g++ gfortran     && rm -rf /var/lib/apt/lists/*
+#11 CACHED
+
+#12 [7/7] RUN python generate_dataset.py && python train.py
+#12 CACHED
+
+#13 exporting to image
+#13 exporting layers 0.0s done
+#13 exporting manifest sha256:64290c7a3b5832d8228d738ee53eb017259e1d3f32cb92ad8635732adb0a2e76 done
+#13 exporting config sha256:47786cb64b9ae3416088ae3f6cd112783272c1dc3a525c6922295e3add6625f4 done
+#13 exporting attestation manifest sha256:dad3300e66f19fa97aa607819a2d9395adef428f23980da8566989a5d942b317 0.0s done
+#13 exporting manifest list sha256:ca2f045b6b49f78d9a38eb6c4380a21f5b7b5432093bfe14f2985db65bedd780
+#13 exporting manifest list sha256:ca2f045b6b49f78d9a38eb6c4380a21f5b7b5432093bfe14f2985db65bedd780 0.1s done
+#13 naming to docker.io/library/spam-api:naive done
+#13 unpacking to docker.io/library/spam-api:naive 0.0s done
+#13 DONE 0.3s
+
+=== building multi-stage image ===
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 3.05kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 DONE 0.4s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 131B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 DONE 0.0s
+
+#5 [builder 1/9] FROM docker.io/library/python:3.11-slim@sha256:9534e5a8e315485d4061ed659af0fd78a284c015f9b73661b41d6bab25604534
+#5 resolve docker.io/library/python:3.11-slim@sha256:9534e5a8e315485d4061ed659af0fd78a284c015f9b73661b41d6bab25604534 0.1s done
+#5 DONE 0.1s
+
+#4 [internal] load build context
+#4 transferring context: 174B 0.0s done
+#4 DONE 0.1s
+
+#6 [builder 3/9] RUN apt-get update && apt-get install -y --no-install-recommends         build-essential gcc g++     && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [builder 4/9] COPY requirements-train.txt ./
+#7 CACHED
+
+#8 [builder 7/9] RUN python generate_dataset.py && python train.py
+#8 CACHED
+
+#9 [builder 9/9] RUN python -m venv /opt/venv     && /opt/venv/bin/pip install --no-cache-dir --upgrade pip     && /opt/venv/bin/pip install --no-cache-dir -r requirements.txt     && find /opt/venv -name '__pycache__' -type d -prune -exec rm -rf {} +     && find /opt/venv -name '*.pyx' -delete     && find /opt/venv -name 'tests' -type d -prune -exec rm -rf {} +
+#9 CACHED
+
+#10 [runtime 3/6] COPY --from=builder /opt/venv /opt/venv
+#10 CACHED
+
+#11 [builder 6/9] COPY generate_dataset.py train.py ./
+#11 CACHED
+
+#12 [runtime 5/6] COPY main.py /app/main.py
+#12 CACHED
+
+#13 [runtime 2/6] WORKDIR /app
+#13 CACHED
+
+#14 [builder 8/9] COPY requirements.txt ./
+#14 CACHED
+
+#15 [builder 2/9] WORKDIR /build
+#15 CACHED
+
+#16 [runtime 4/6] COPY --from=builder /build/model.joblib /app/model.joblib
+#16 CACHED
+
+#17 [builder 5/9] RUN pip install --no-cache-dir -r requirements-train.txt
+#17 CACHED
+
+#18 [runtime 6/6] RUN useradd --create-home --uid 10001 appuser && chown -R appuser:appuser /app
+#18 CACHED
+
+#19 exporting to image
+#19 exporting layers 0.0s done
+#19 exporting manifest sha256:9cf9ecea8e85dbff631a8a5166ddf59229293d08518754b0aed6490569de6053 done
+#19 exporting config sha256:91d9ba16babf57e0584d3329b2e4f33cb47d505036980cf4e04db97c1b90386b done
+#19 exporting attestation manifest sha256:e75eb9370d4767a2c4925763b422232b5025e8607e2e8c964df4f125ab37e8a7 0.1s done
+#19 exporting manifest list sha256:fd2b53c3b325f5938f82a7f8685f81d7843860ad007f8fbe9c4c1f99bfbd0f33
+#19 exporting manifest list sha256:fd2b53c3b325f5938f82a7f8685f81d7843860ad007f8fbe9c4c1f99bfbd0f33 0.1s done
+#19 naming to docker.io/library/spam-api:v1 done
+#19 unpacking to docker.io/library/spam-api:v1 0.0s done
+#19 DONE 0.3s
+
+=== docker images ===
+REPOSITORY:TAG                        SIZE      IMAGE ID
+spam-api:naive                        1.47GB    ca2f045b6b49
+spam-api:v1                           502MB     fd2b53c3b325
+
+=== size comparison ===
+naive single-stage :    380.2 MB  (398,692,605 bytes)
+multi-stage        :    113.1 MB  (118,596,795 bytes)
+absolute reduction :    267.1 MB
+percent reduction  :     70.3 %
+
+=== what is actually IN each image (evidence for the explanation) ===
+--- spam-api:naive ---
+base:        PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+gcc present: /usr/bin/gcc
+pandas:      /usr/local/lib/python3.11/site-packages/pandas
+dataset CSV: -rw-r--r-- 1 root root 61011 Sep 18 14:41 /app/spam_dataset.csv
+train.py:    /app/train.py
+pip cache:   92M	/root/.cache/pip
+
+--- spam-api:v1 ---
+base:        PRETTY_NAME="Debian GNU/Linux 13 (trixie)"
+gcc present: NO
+pandas:      NOT INSTALLED
+dataset CSV: NOT PRESENT
+train.py:    NOT PRESENT
+pip cache:   NONE
+
+=== behavioural equivalence check ===
+spam-api:naive  /healthz -> {"status":"ok","version":"1.0.0","cache":"disabled"}
+spam-api:naive  /predict(spam) -> {"label":"spam"}
+spam-api:naive  /predict(ham)  -> {"label":"ham"}
+
+spam-api:v1  /healthz -> {"status":"ok","version":"1.0.0","cache":"disabled"}
+spam-api:v1  /predict(spam) -> {"label":"spam"}
+spam-api:v1  /predict(ham)  -> {"label":"ham"}
+
+Both images serve /healthz and /predict identically.

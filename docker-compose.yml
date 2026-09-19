@@ -1,0 +1,53 @@
+# ---------------------------------------------------------------------------
+# Q2 — two-service stack: the spam API (multi-stage image) + a Redis cache.
+#
+# The API reaches Redis at hostname "cache" purely because of the service name:
+# Compose creates a user-defined bridge network for the project and registers
+# each service name in its embedded DNS. No IPs, no links, no /etc/hosts edits.
+# ---------------------------------------------------------------------------
+name: spam-stack
+
+services:
+  api:
+    build:
+      context: ./app
+      dockerfile: Dockerfile          # the MULTI-STAGE Dockerfile from Q1 part 2
+      args:
+        APP_VERSION: "1.0.0"
+    image: spam-api:v1
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_HOST: cache               # <-- service name resolves via Compose DNS
+      REDIS_PORT: "6379"
+      CACHE_TTL_SECONDS: "300"
+      APP_VERSION: "1.0.0"
+    depends_on:
+      cache:
+        condition: service_healthy    # don't start the API until Redis answers PING
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz').status==200 else 1)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
+
+  cache:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    # Not published to the host: only the api service needs to reach it, and it
+    # does so over the project network. Uncomment to inspect with redis-cli.
+    # ports:
+    #   - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+networks:
+  default:
+    name: spam-stack-net

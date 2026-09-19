@@ -1,0 +1,26 @@
+# ===========================================================================
+# Q4 part 1 — Service exposing the Deployment.
+#
+# The Service selects on app=spam-api, i.e. on the POD LABEL, not on the
+# Deployment or the ReplicaSet. That indirection is exactly what makes both
+# the self-healing demo (part 2) and the rolling update (part 3) transparent
+# to clients: a replacement pod or a brand-new-revision pod carries the same
+# label, so it joins the Endpoints set the moment its readinessProbe passes.
+# ===========================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: spam-api
+  labels:
+    app: spam-api
+    assignment: da3408-mod3-q4
+spec:
+  type: NodePort          # NodePort so the zero-downtime curl loop can hit it
+                          # from the host via `minikube service spam-api --url`
+  selector:
+    app: spam-api
+  ports:
+    - name: http
+      port: 80            # Service port (cluster-internal)
+      targetPort: http    # container port 8000, referenced by name
+      nodePort: 30080     # fixed so the evidence script has a stable URL

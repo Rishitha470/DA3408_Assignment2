@@ -1,0 +1,90 @@
+# ===========================================================================
+# Q3 — Indexed Job: parallel validation of 8 signup-record shards.
+#
+# PARALLELISM JUSTIFICATION (see write-up for the full argument):
+#   * The validator is single-threaded pure Python (csv.DictReader + one
+#     compiled regex per row). Its CPU ceiling is 1 core no matter what we
+#     grant it, and measured peak is well under half a core, so
+#     requests = limits = 500m is generous and never throttles the pod.
+#     requests == limits also puts each pod in the Guaranteed QoS class, which
+#     is what makes the capacity arithmetic below trustworthy.
+#   * Cluster: 2 nodes x 2 CPU = 4000m NOMINAL. Allocatable is lower — kubelet
+#     plus the kube-system pods that must keep running (kube-proxy, CoreDNS,
+#     storage-provisioner) leave roughly 1750m usable per node, ~3500m total.
+#   * Scheduling is PER NODE, not cluster-wide: a pod only starts if one node
+#     has 500m free. floor(1750 / 500) = 3 pods per node -> 6 schedulable.
+#   * parallelism: 4 -> 2 pods per node, 2000m total, ~57% of usable CPU.
+#     All four start immediately, none sit Pending, and kube-system keeps its
+#     headroom. completions: 8 therefore runs as exactly 2 clean waves of 4.
+#   * Why NOT parallelism: 8 — 8 x 500m = 4000m is 100% of NOMINAL and ~114%
+#     of usable allocatable. The manifest would permit 8, but 2-4 pods would
+#     sit Pending until earlier ones exited, so the declared parallelism would
+#     never actually be reached. Declaring what fits is the point.
+# ===========================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: shard-validation
+  labels:
+    app: shard-validation
+    assignment: da3408-mod3-q3
+spec:
+  completionMode: Indexed        # gives every pod a unique JOB_COMPLETION_INDEX
+  completions: 8                 # one completion per shard, indices 0..7
+  parallelism: 4                 # justified above: 2 pods/node x 2 nodes
+  backoffLimit: 2                # a shard is deterministic; 2 retries is plenty
+  ttlSecondsAfterFinished: 1800  # keep pods around long enough to read logs
+  template:
+    metadata:
+      labels:
+        app: shard-validation
+    spec:
+      restartPolicy: Never
+      # Never (not OnFailure): OnFailure restarts the container IN PLACE and the
+      # previous container's log is only reachable via --previous, which makes
+      # log-based result collection fragile. Never creates a fresh pod per
+      # attempt, so every attempt keeps its own retrievable log.
+
+      # Spread the 4 concurrent pods across both nodes instead of stacking them
+      # on whichever node the scheduler scores highest.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: shard-validation
+
+      containers:
+        - name: validator
+          image: spam-shard-validator:v1
+          imagePullPolicy: IfNotPresent   # image is side-loaded into minikube
+          env:
+            # --- Downward API: which pod ran on which node -------------------
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            # -----------------------------------------------------------------
+            # JOB_COMPLETION_INDEX is injected automatically by the Job
+            # controller because completionMode is Indexed.
+            - name: DATA_DIR
+              value: "/data"
+            - name: HOLD_SECONDS
+              value: "20"   # keeps pods Running long enough for the -o wide snapshot
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"     # requests == limits -> Guaranteed QoS
+              memory: "128Mi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]

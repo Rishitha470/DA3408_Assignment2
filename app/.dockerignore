@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.git/
+.venv/
+evidence/
+k8s/
+scripts/
+*.md
+spam_dataset.csv
+model.joblib

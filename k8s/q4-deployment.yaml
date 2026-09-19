@@ -1,0 +1,93 @@
+# ===========================================================================
+# Q4 part 1 — Deployment for the spam-detection API (the Q1 multi-stage image).
+# No HorizontalPodAutoscaler: this question is about self-healing and rolling
+# updates, not scaling.
+# ===========================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spam-api
+  labels:
+    app: spam-api
+    assignment: da3408-mod3-q4
+  annotations:
+    kubernetes.io/change-cause: "initial rollout of spam-api:v1"
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5        # keeps `kubectl rollout history` meaningful
+  selector:
+    matchLabels:
+      app: spam-api
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0          # never drop below 2 Ready pods -> zero downtime
+      maxSurge: 1                # add one new pod, wait for Ready, then retire an old one
+  template:
+    metadata:
+      labels:
+        app: spam-api
+    spec:
+      # Put the two replicas on different nodes where possible, so losing one
+      # node cannot take the whole service down.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: spam-api
+      containers:
+        - name: api
+          image: spam-api:v1
+          imagePullPolicy: IfNotPresent    # side-loaded into minikube
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: APP_VERSION
+              value: "1.0.0"
+            # REDIS_HOST is intentionally NOT set here: Q4 deploys the Q1 API
+            # standalone. main.py degrades to compute-every-time when the cache
+            # is absent rather than failing requests.
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          # Readiness gates traffic: the Service only sends requests to pods
+          # whose model is actually loaded. This is what makes maxUnavailable:0
+          # meaningful during the rolling update.
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          # Liveness restarts a wedged process; deliberately slacker than
+          # readiness so a slow startup is never mistaken for a crash.
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+      terminationGracePeriodSeconds: 20

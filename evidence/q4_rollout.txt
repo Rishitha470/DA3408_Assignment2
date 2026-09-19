@@ -1,0 +1,32 @@
+=== BEFORE: current image and version ===
+spam-api:v1
+{"status":"ok","version":"1.0.0","cache":"disabled"}
+NAME                        READY   STATUS    RESTARTS   AGE    IP            NODE           NOMINATED NODE   READINESS GATES
+spam-api-865d7f44b5-lkqqg   1/1     Running   0          48s    10.244.0.13   minikube       <none>           <none>
+spam-api-865d7f44b5-smtct   1/1     Running   0          4m3s   10.244.1.12   minikube-m02   <none>           <none>
+
+=== triggering rolling update to spam-api:v2 ===
+deployment.apps/spam-api image updated
+deployment.apps/spam-api env updated
+deployment.apps/spam-api annotated
+
+=== kubectl rollout status ===
+Waiting for deployment "spam-api" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "spam-api" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "spam-api" rollout to finish: 1 out of 2 new replicas have been updated...
+Waiting for deployment "spam-api" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "spam-api" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "spam-api" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "spam-api" rollout to finish: 1 old replicas are pending termination...
+deployment "spam-api" successfully rolled out
+
+=== kubectl rollout history ===
+deployment.apps/spam-api 
+REVISION  CHANGE-CAUSE
+1         initial rollout of spam-api:v1
+2         initial rollout of spam-api:v1
+3         roll to spam-api:v2 — /healthz now reports version 2.0.0
+
+
+=== AFTER: new image, new version, both pods replaced ===
+spam-api:v2

@@ -1,0 +1,7 @@
+# Runtime dependencies only (no pandas, no build tools).
+scikit-learn==1.5.2
+joblib==1.4.2
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+redis==5.2.1

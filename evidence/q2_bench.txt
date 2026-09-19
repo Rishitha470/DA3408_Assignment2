@@ -1,0 +1,13 @@
+[ready] {'status': 'ok', 'version': '1.0.0', 'cache': 'enabled'}
+
+=== Q2 cache benchmark ===
+[MISS ] n= 200  X-Cache=['MISS']  server mean=  1.789 ms  p50=  1.649 ms  p95=  2.409 ms  |  wall mean=  5.351 ms
+[HIT  ] n= 200  X-Cache=['HIT']  server mean=  0.651 ms  p50=  0.538 ms  p95=  1.243 ms  |  wall mean=  4.765 ms
+
+correctness: all 200 labels identical on hit and miss  -> OK
+speedup (server mean): 2.75x   (1.789 ms -> 0.651 ms)
+speedup (server p50) : 3.07x   (1.649 ms -> 0.538 ms)
+speedup (wall  mean) : 1.12x
+redis stats: {'cache': 'enabled', 'keyspace_hits': 201, 'keyspace_misses': 206, 'keys': 206}
+
+RESULT: cache hits are measurably faster than misses.

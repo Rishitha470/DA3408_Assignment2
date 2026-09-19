@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+app/spam_dataset.csv
+app/model.joblib
+q3-shard-validator/shards/
+.venv/
