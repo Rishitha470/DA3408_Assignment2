@@ -1,8 +1,8 @@
-# Manual commands for the recording
+# Commands I used in my terminal.
 
 ---
 
-## Q1 — Single-stage vs. multi-stage Docker
+## Q1: Single-stage vs. multi-stage Docker
 
 ```bash
 cd aiops-mod3
@@ -42,7 +42,7 @@ docker run --rm --entrypoint sh spam-api:v1     -c "command -v gcc; python -c 'i
 
 ---
 
-## Q2 — Docker Compose + Redis cache
+## Q2: Docker Compose + Redis cache
 
 ```bash
 # Bring up the two-service stack
@@ -76,7 +76,7 @@ docker compose down -v
 
 ---
 
-## Q3 — Kubernetes Indexed Job
+## Q3: Kubernetes Indexed Job
 
 ```bash
 # Fresh 2-node, 2-CPU-per-node cluster (matches the assignment's constraint)
@@ -122,7 +122,7 @@ kubectl delete -f k8s/q3-indexed-job.yaml
 
 ---
 
-## Q4 — Kubernetes Deployment: self-healing and rolling update
+## Q4: Kubernetes Deployment: self-healing and rolling update
 
 ```bash
 # Build v1 and v2 images (v2 differs only in APP_VERSION)
